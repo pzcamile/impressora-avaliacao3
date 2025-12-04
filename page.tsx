@@ -1,63 +1,72 @@
-interface Impressora {
-    id: string;
-    fabricante: string;
-    qtdPagina: number;
-}
+"use client"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default async function ListaImpressoras() {
+export default function NewImpressora(){
     
-    let listaImpressoras: Impressora[] = []; 
+    const [fabricante, setFabricante] = useState('');
+    const [paginas, setPaginas] = useState('');
+    const router = useRouter();
 
-    try {
-        const response = await fetch("https://69320e8211a8738467d16303.mockapi.io/api/impressoras", {
-            cache: 'no-store' 
-        }); 
-
-        if (!response.ok) {
-            throw new Error(`Falha ao buscar dados: ${response.status}`);
+    async function saveImpressora(event: React.FormEvent<HTMLFormElement>){
+      
+        event.preventDefault(); 
+        
+        const impressora = {
+            fabricante: fabricante,
+            qtdPagina: parseInt(paginas) 
         }
 
-        listaImpressoras = await response.json(); 
-        
-    } catch (error) {
-        console.error("Erro ao carregar impressoras:", error);
-    }
+        const response = await fetch(`https://69320e8211a8738467d16303.mockapi.io/api/impressoras`,
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(impressora)
 
-    return (
-        <div className="table-container">
-            <h1>Lista de impressoras Cadastrados</h1>
+            }
+        )
 
-            <table className="styled-table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Fabricante</th>
-                        <th>Quantidade de Páginas</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {listaImpressoras.map((impressora) => (
-                        <tr key={impressora.id}>
-                            <td>{impressora.id}</td>
-                            <td>{impressora.fabricante}</td>
-                            <td>{impressora.qtdPagina}</td> 
-                            <td><a href={`/impressoras/delete/?id=${impressora.id}`} className="action-link">Excluir</a></td>
-                        </tr>
-                    ))}
-                    
-                    {listaImpressoras.length === 0 && (
-                        <tr>
-                            <td colSpan={4} style={{ textAlign: 'center' }}>Nenhuma impressora encontrada.</td>
-                        </tr>
-                    )}
-                </tbody>
-
-            </table>
+        if (response.ok) {
+            alert("✅ Impressora cadastrada com sucesso!");
             
-            <a href="/impressoras/new" className="action-link">Cadastrar Nova Impressora</a>
-
+            setFabricante('');
+            setPaginas('');
+            
+            router.push('/impressoras'); 
+            
+        } else {
+            alert("❌ Erro ao cadastrar impressora. Tente novamente.");
+        }
+    }
+    
+    return(
+        <div className="form-container">
+            <h1>Cadastrar Nova Impressora</h1>
+            
+            <form onSubmit={saveImpressora}> 
+                
+                <input 
+                    type="text" 
+                    id="fabricante" 
+                    placeholder="Digite a Fabricante da Impressora"
+                    value={fabricante} 
+                    onChange={(e) => setFabricante(e.target.value)} 
+                    required 
+                />
+                
+                <input 
+                    type="number" 
+                    id="paginas" 
+                    placeholder="Digite o Quantidade de Páginas"
+                    value={paginas} 
+                    onChange={(e) => setPaginas(e.target.value)} 
+                    required
+                />
+                
+                <button type="submit" className="btn-primary">Salvar Impressora</button>
+            </form>
         </div>
     )
 }
