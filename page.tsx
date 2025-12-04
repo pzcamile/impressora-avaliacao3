@@ -1,72 +1,35 @@
 "use client"
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useSearchParams, useRouter } from "next/navigation" 
 
-export default function NewImpressora(){
-    
-    const [fabricante, setFabricante] = useState('');
-    const [paginas, setPaginas] = useState('');
-    const router = useRouter();
+export default function DeleteImpressora() {
 
-    async function saveImpressora(event: React.FormEvent<HTMLFormElement>){
-      
-        event.preventDefault(); 
+    const id = useSearchParams().get('id');
+    const router = useRouter(); 
+
+    async function deleteImpressora() {
         
-        const impressora = {
-            fabricante: fabricante,
-            qtdPagina: parseInt(paginas) 
-        }
-
-        const response = await fetch(`https://69320e8211a8738467d16303.mockapi.io/api/impressoras`,
+        const response = await fetch(`https://69320e8211a8738467d16303.mockapi.io/api/impressoras/${id}`,
             {
-                method:"POST",
-                headers:{
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(impressora)
-
+                method: "DELETE"
             }
         )
 
         if (response.ok) {
-            alert("✅ Impressora cadastrada com sucesso!");
-            
-            setFabricante('');
-            setPaginas('');
-            
+            alert("✅ Impressora excluída com sucesso!");
             router.push('/impressoras'); 
             
         } else {
-            alert("❌ Erro ao cadastrar impressora. Tente novamente.");
+            alert("❌ Erro ao excluir o Impressora. Tente novamente.");
         }
     }
     
-    return(
+    return (
         <div className="form-container">
-            <h1>Cadastrar Nova Impressora</h1>
+            <h1>Confirmar Exclusão de Impressora?</h1>
+            {id ? <p>Clique em Confirmar para excluir a Impressora com ID: <strong>{id}</strong></p> : <p>ID da impressora não encontrado.</p>}
             
-            <form onSubmit={saveImpressora}> 
-                
-                <input 
-                    type="text" 
-                    id="fabricante" 
-                    placeholder="Digite a Fabricante da Impressora"
-                    value={fabricante} 
-                    onChange={(e) => setFabricante(e.target.value)} 
-                    required 
-                />
-                
-                <input 
-                    type="number" 
-                    id="paginas" 
-                    placeholder="Digite o Quantidade de Páginas"
-                    value={paginas} 
-                    onChange={(e) => setPaginas(e.target.value)} 
-                    required
-                />
-                
-                <button type="submit" className="btn-primary">Salvar Impressora</button>
-            </form>
+            <button onClick={deleteImpressora} className="btn-danger">Confirmar Exclusão</button>
+            <a href="/impressoras" className="action-link" style={{ marginLeft: '15px' }}>Cancelar</a> 
         </div>
     )
 }
